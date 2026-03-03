@@ -1,10 +1,62 @@
-# Contributing to Blackroad Os Roadchain
+# Contributing to BlackRoad OS — RoadChain
 
-First off, thank you for considering contributing to Blackroad Os Roadchain! It's people like you that make BlackRoad OS such a great ecosystem.
+Thank you for your interest in contributing to RoadChain.
+
+> ⚠️ **IMPORTANT: Contributor access is GATED. You must obtain a valid API gateway token before any code contribution is accepted or reviewed.**
+
+---
+
+## 🔐 Contributor Access Gateway (Required)
+
+BlackRoad OS routes **all** vendor API traffic through its own proprietary infrastructure. External AI providers (OpenAI, Anthropic, GitHub Copilot, Codex, etc.) are **NOT permitted** for contribution tooling or code generation.
+
+### Step 1 — Obtain a Contributor Token
+
+Contact BlackRoad OS to request a contributor token:
+- **Email:** blackroad.systems@gmail.com
+- **Subject:** `Contributor Token Request — <your GitHub username>`
+
+Your token will be issued after identity verification and agreement to the [LICENSE](LICENSE).
+
+### Step 2 — Configure Your Environment
+
+Copy `.env.example` to `.env` and populate:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+```
+BLACKROAD_GATEWAY_TOKEN=your_contributor_token_here
+BLACKROAD_GATEWAY_URL=https://gateway.blackroad.io
+STRIPE_PUBLISHABLE_KEY=your_stripe_key  # if working on payments
+```
+
+### Step 3 — Start the Converter API
+
+All vendor API calls from your local environment must route through the BlackRoad gateway:
+
+```bash
+npm run gateway
+```
+
+This starts the converter API at `http://localhost:4000`. See [docs/GATEWAY.md](docs/GATEWAY.md) for full documentation.
+
+### Step 4 — Verify Access
+
+```bash
+curl -H "X-BlackRoad-Token: $BLACKROAD_GATEWAY_TOKEN" http://localhost:4000/health
+# Expected: {"status":"ok","authorized":true}
+```
+
+> **If you do not have a valid token, API calls will be rejected with HTTP 401.**
+
+---
 
 ## 🌟 Code of Conduct
 
-This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code.
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
 ## 🎯 How Can I Contribute?
 
@@ -88,14 +140,17 @@ background: linear-gradient(135deg,
 
 ## 🔄 Development Process
 
-1. **Fork** the repository
-2. **Clone** your fork locally
-3. **Create a branch** for your feature/fix
-4. **Make your changes** following our guidelines
-5. **Test** your changes thoroughly
-6. **Commit** with a descriptive message
-7. **Push** to your fork
-8. **Open a Pull Request**
+1. **Obtain a contributor token** (see above — this is mandatory)
+2. **Fork** the repository
+3. **Clone** your fork locally
+4. **Configure `.env`** with your contributor token
+5. **Start the gateway** with `npm run gateway`
+6. **Create a branch** for your feature/fix
+7. **Make your changes** following our guidelines
+8. **Test** your changes thoroughly
+9. **Commit** with a descriptive message
+10. **Push** to your fork
+11. **Open a Pull Request**
 
 ### Commit Message Format
 
@@ -123,6 +178,8 @@ Before submitting a PR:
 
 ## 📋 Pull Request Checklist
 
+- [ ] I have a valid contributor API token configured
+- [ ] All API calls route through the BlackRoad gateway (no direct vendor calls)
 - [ ] My code follows the brand system guidelines
 - [ ] I have tested on multiple browsers
 - [ ] I have tested responsiveness
@@ -145,6 +202,7 @@ After your pull request is merged:
 ## 💡 Getting Help
 
 - **Documentation:** https://docs.blackroad.io
+- **Gateway Docs:** [docs/GATEWAY.md](docs/GATEWAY.md)
 - **Issues:** Use GitHub Issues for questions
 - **Email:** blackroad.systems@gmail.com
 
@@ -154,4 +212,6 @@ All contributors will be recognized in our README and on our website!
 
 ---
 
-Thank you for contributing to BlackRoad OS! 🎊
+**Copyright © 2026 BlackRoad OS, Inc. All Rights Reserved.**
+
+See [LICENSE](LICENSE) for complete terms.

@@ -247,18 +247,17 @@ watch -n 10 './scripts/check-winner.sh && notify-send "🎉 YOU WON 3.125 BTC!"'
 
 ## 🤝 Contributing
 
-RoadChain is open source! Contributions welcome:
+RoadChain contributions are governed by the **BlackRoad OS Contributor Access Policy**.
 
-1. Fork the repo
-2. Create a feature branch
-3. Commit your changes
-4. Push and create a PR
+**Contributor access requires a valid API gateway token.** All access to repository integrations and vendor APIs routes through the BlackRoad infrastructure — not through third-party AI providers.
 
----
+To become a contributor:
+1. Review the [Contributor Gateway Documentation](docs/GATEWAY.md)
+2. Obtain a contributor token via the [BlackRoad Gateway](https://gateway.blackroad.io)
+3. Configure your `.env` using `.env.example`
+4. All API calls must route through `http://localhost:4000` (the BlackRoad converter API)
 
-## 📜 License
-
-MIT - Do whatever you want, just don't forget the space between! ✨
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete contributor guidelines.
 
 ---
 
