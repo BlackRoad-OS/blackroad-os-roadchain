@@ -1,0 +1,20 @@
+name = "blackroad-roadchain-api"
+main = "workers/api.js"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+BITCOIN_WALLET = "1Ak2fc5N2q4imYxqVMqBNEQDFq8J2Zs9TZ"
+BLOCK_REWARD = "3.125"
+ENVIRONMENT = "production"
+
+[[routes]]
+pattern = "roadchain.blackroad.io/api/*"
+zone_name = "blackroad.io"
+
+[build]
+command = ""
+
+# Cloudflare Pages deployment
+[pages_build_output_dir]
+path = "."
