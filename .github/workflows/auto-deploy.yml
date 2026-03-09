@@ -15,23 +15,26 @@ jobs:
     outputs:
       service_type: ${{ steps.detect.outputs.service_type }}
       deploy_target: ${{ steps.detect.outputs.deploy_target }}
-    
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
+
       - name: Detect Service Type
         id: detect
         run: |
           if [ -f "next.config.mjs" ] || [ -f "next.config.js" ]; then
             echo "service_type=nextjs" >> $GITHUB_OUTPUT
             echo "deploy_target=cloudflare" >> $GITHUB_OUTPUT
+          elif [ -f "wrangler.toml" ]; then
+            echo "service_type=worker" >> $GITHUB_OUTPUT
+            echo "deploy_target=cloudflare" >> $GITHUB_OUTPUT
           elif [ -f "Dockerfile" ]; then
             echo "service_type=docker" >> $GITHUB_OUTPUT
             echo "deploy_target=railway" >> $GITHUB_OUTPUT
           elif [ -f "package.json" ]; then
             echo "service_type=node" >> $GITHUB_OUTPUT
-            echo "deploy_target=railway" >> $GITHUB_OUTPUT
+            echo "deploy_target=cloudflare" >> $GITHUB_OUTPUT
           elif [ -f "requirements.txt" ]; then
             echo "service_type=python" >> $GITHUB_OUTPUT
             echo "deploy_target=railway" >> $GITHUB_OUTPUT
@@ -45,45 +48,46 @@ jobs:
     needs: detect-service
     if: needs.detect-service.outputs.deploy_target == 'cloudflare'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      
+
       - name: Install Dependencies
         run: npm ci
-      
-      - name: Build
+
+      - name: Build (if applicable)
+        if: needs.detect-service.outputs.service_type == 'nextjs'
         run: npm run build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-      
+
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .next --project-name=${{ github.event.repository.name }}
+          command: pages deploy . --project-name=${{ github.event.repository.name }}
 
   deploy-railway:
     name: Deploy to Railway
     needs: detect-service
     if: needs.detect-service.outputs.deploy_target == 'railway'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
+
       - name: Install Railway CLI
         run: npm i -g @railway/cli
-      
+
       - name: Deploy to Railway
         run: railway up --service ${{ github.event.repository.name }}
         env:
@@ -94,20 +98,20 @@ jobs:
     needs: [deploy-cloudflare, deploy-railway]
     if: always() && (needs.deploy-cloudflare.result == 'success' || needs.deploy-railway.result == 'success')
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Wait for Deployment
         run: sleep 30
-      
+
       - name: Check Health Endpoint
         run: |
           URL="${{ secrets.DEPLOY_URL }}/api/health"
-          curl -f $URL || exit 1
-      
+          curl -f "$URL" || exit 1
+
       - name: Notify Success
         if: success()
         run: echo "✅ Deployment successful and healthy!"
-      
+
       - name: Notify Failure
         if: failure()
         run: |

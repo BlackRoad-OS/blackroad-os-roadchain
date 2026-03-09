@@ -15,18 +15,62 @@ permissions:
   checks: read
 
 jobs:
+  # Enable automerge for Dependabot PRs
+  dependabot-automerge:
+    name: Enable Automerge for Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
+
+      - name: 🔍 Get Dependabot Metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: 🚀 Enable Auto-Merge for Dependabot PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          echo "🤖 Enabling automerge for Dependabot PR: $PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+          echo "✅ Automerge enabled for $PR_URL"
+
+      - name: 💬 Add Automerge Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          gh pr comment "$PR_NUMBER" --body "🤖 **Auto-Merge Enabled**
+
+          This Dependabot PR will be automatically merged once all required checks pass.
+
+          - ✅ Created by Dependabot
+          - ✅ Automerge enabled (squash)
+          - ⏳ Waiting for CI checks to pass
+
+          ---
+          🤖 Automated by BlackRoad Auto-Merge System
+          © 2025-2026 BlackRoad OS, Inc." || true
+
+  # Auto-merge for GitHub Actions bot PRs (existing behavior)
   auto-merge:
     name: Auto-Merge Compliant PRs
     runs-on: ubuntu-latest
 
-    # Only run for bot-created PRs
+    # Only run for bot-created PRs (non-Dependabot)
     if: |
-      github.event.pull_request.user.login == 'github-actions[bot]' ||
-      github.actor == 'github-actions[bot]'
+      github.actor == 'github-actions[bot]' ||
+      github.event.pull_request.user.login == 'github-actions[bot]'
 
     steps:
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # actions/checkout@v4
 
       - name: 🔍 Get PR Details
         id: pr
@@ -180,6 +224,3 @@ Please review the PR manually and resolve any issues.
         run: |
           echo "🚨 Auto-merge workflow encountered an error"
           echo "This may require manual intervention"
-          # If Slack webhook is configured, uncomment below:
-          # curl -X POST "${{ secrets.SLACK_WEBHOOK }}" -H 'Content-Type: application/json' \
-          #   -d '{"text":"🚨 Auto-merge failed in ${{ github.repository }}"}'
