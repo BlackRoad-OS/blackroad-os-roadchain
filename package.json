@@ -30,7 +30,7 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "node-cron": "^4.2.1",
-    "ws": "^8.18.3"
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
